@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<style>
+
+    .public-event {
+        padding: 20px;
+        width: 80%;
+        margin: auto;
+    }
+
+
+
+</style>
+
+
+{% for event in events %}
+
+    <div class="row public-event mb-2 mt-2">
+      <div class="col-12">
+        <div class="card text-center">
+            <div class="card-header">
+                {{ event.title }}
+            </div>
+            <div class="card-body" style="">
+                <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  creator:
+                </div>
+                <span class="col-sm-8 col-form-label col-form-label-sm">
+                    {{ event.creator }}
+                </span>
+                <hr class="col-sm-11 m-1">
+                <div class="col-sm-5 d-flex align-items-center">
+                  created at:
+                </div>
+                <span class="col-sm-7 col-form-label col-form-label-sm">
+                    {{ event.created_at }}
+                </span>
+                <hr class="col-sm-11 m-1">
+                <div class="col-sm-12 d-flex align-items-center">
+                  <a type="button" href="{% url 'event_details' event.pk %}" class="btn btn-lg btn-block event-button">open +event</a>
+                </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+{% endfor %}
+
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}

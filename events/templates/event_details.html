@@ -1,0 +1,316 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+
+
+<h3 class="mt-4 text-center">+event: {{ event.title }}</h3>
+
+
+
+
+<div class="row">
+    <div class="col-sm-6 p-5">
+        <div class="card text-center">
+            <div class="card-header">
+                info
+            </div>
+            <div class="card-body" style="">
+                <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  creator:
+                </div>
+                <span class="col-sm-8 col-form-label col-form-label-sm">
+                    {{ event.creator }}
+                </span>
+                <hr class="col-sm-10 m-1">
+                <div class="col-sm-4 d-flex align-items-center">
+                  public:
+                </div>
+                <span class="col-sm-8 col-form-label col-form-label-sm">
+                    {% if event.creator == user %}
+                        {% if event.is_public%}
+                            <i id="eye" onclick="changePublicEvent(this, {{ event.pk }})" class="bi bi-eye" style="width: 20px" data-public="false"></i>
+                            <i id="eye-splash" onclick="changePublicEvent(this, {{ event.pk }})" class="bi bi-eye-slash" data-public="true" hidden></i>
+                        {% else %}
+                            <i id="eye" onclick="changePublicEvent(this, {{ event.pk }})" class="bi bi-eye" style="width: 20px" data-public="false" hidden></i>
+                            <i id="eye-splash" onclick="changePublicEvent(this, {{ event.pk }})" class="bi bi-eye-slash" data-public="true"></i>
+                        {% endif %}
+                    {% else %}
+                        {% if event.is_public%}
+                            <i id="eye" class="bi bi-eye" style="width: 20px" data-public="false"></i>
+                        {% else %}
+                            <i id="eye-splash" class="bi bi-eye-slash" data-public="true"></i>
+                        {% endif %}
+                    {% endif %}
+                </span>
+                <hr class="col-sm-10 m-1">
+                <div class="col-sm-5 d-flex align-items-center">
+                  created at:
+                </div>
+                <span class="col-sm-7 col-form-label col-form-label-sm">
+                    {{ event.created_at }}
+                </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 p-5">
+        <div class="card text-center">
+            <div class="card-header">
+                invited users
+            </div>
+            <div class="card-body" style="">
+                <div class="row">
+                    {% for invited_user in event.users.all %}
+                        <div class="col-sm-12" id="inviteUser{{ invited_user.pk }}">
+                            <div class="row">
+                                <div class="col-sm-10 col-form-label col-form-label-sm">
+                                    {{ invited_user.username }}
+                                </div>
+                                {% if event.creator == user %}
+                                <div class="col-sm-2 col-form-label col-form-label-sm">
+                                    <a onclick="uninviteUser({{invited_user.pk}}, {{event.pk}}, '{{ invited_user.username }}')" href="javascript:void(0);" class="anti-a"><i class="bi bi-person-dash-fill"></i></a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <hr class="col-sm-11 m-1">
+                        </div>
+
+                    {% endfor %}
+                {% if event.creator == user %}
+                <div class="col-sm-12 m-1" id="createUserForm" hidden>
+                    <form action="{% url 'invite_users' event.pk %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-9">
+                                <select id="usersSelect" multiple class="form-control" name="users">
+                                    {% for inv_user in users %}
+                                        {% if user != inv_user and inv_user not in event.users.all %}
+                                          <option value="{{inv_user.pk}}">
+                                              {{ inv_user.username }} | #{{ inv_user.pk }}
+                                          </option>
+                                        {% endif %}
+                                    {% endfor %}
+
+
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                              <button type="submit" class="btn event-button">invite</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <span class="col-sm-12 col-form-label col-form-label-sm">
+                    <a class="anti-a" href="javascript:void(0);" onclick="viewForm('User')">
+                        +user
+                        <svg id="openSvgUser" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z"/>
+                        </svg>
+                        <svg id="closeSvgUser" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-up hidden" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </a>
+                </span>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 p-5">
+        <div class="card text-center">
+            <div class="card-header">
+                todo list
+            </div>
+            <div class="card-body" style="">
+                <div class="row">
+                {% for task in event.todo_list.tasks.all %}
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-2 d-flex align-items-center">
+                            {% if task.status %}
+                                <input onchange="changeTodoStatus(this, {{ task.pk }})" style="max-width: 13px;" class="form-check-input ml-1" type="checkbox" checked>
+                            {% else %}
+                                <input onchange="changeTodoStatus(this, {{ task.pk }})" style="max-width: 13px;" class="form-check-input ml-1" type="checkbox">
+                            {% endif %}
+                        </div>
+                        <label class="col-sm-10 col-form-label col-form-label-sm">
+                            {{ task.text }}
+                        </label>
+                    </div>
+                </div>
+                <hr class="col-sm-10 m-1">
+                {% endfor %}
+                {% if event.creator == user %}
+                <div class="col-sm-12 m-1" id="createTaskForm" hidden>
+                    <form action="{% url 'create_task' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <input type="text" name="todo_list_id" value="{{ event.todo_list.pk }}" hidden>
+                            <div class="form-group col-md-9">
+                              <input type="text" name="text" placeholder="task" class="form-control">
+                            </div>
+                            <div class="form-group col-md-3">
+                              <button type="submit" class="btn event-button">add</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <span class="col-sm-12 col-form-label col-form-label-sm">
+                    <a class="anti-a" href="javascript:void(0);" onclick="viewForm('Task')">
+                        +task
+                        <svg id="openSvgTask" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z"/>
+                        </svg>
+                        <svg id="closeSvgTask" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-up hidden" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </a>
+                </span>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 p-5">
+        <div class="card text-center">
+            <div class="card-header">
+                price list
+            </div>
+            <div class="card-body" style="">
+                <div class="row">
+                {% for item in event.price_list.items.all %}
+                <div class="col-sm-2 d-flex align-items-center">
+                  {{ item.price }}
+                </div>
+                <span class="col-sm-10 col-form-label col-form-label-sm">
+                    {{ item.name }}
+                </span>
+                <hr class="col-sm-10 m-1">
+                {% endfor %}
+                {% if event.creator == user %}
+                <div class="col-sm-12 m-1" id="createItemForm" hidden>
+                    <form action="{% url 'create_item' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="text" name="price_list_id" value="{{ event.price_list.pk }}" hidden>
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                              <input type="number" step="any" name="price" placeholder="price" class="form-control" >
+                            </div>
+                            <div class="form-group col-md-6">
+                              <input type="text" name="name" placeholder="name" class="form-control" >
+                            </div>
+                            <div class="form-group col-md-3">
+                              <button type="submit" class="btn event-button">add</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <span class="col-sm-12 col-form-label col-form-label-sm">
+                    <a class="anti-a" href="javascript:void(0);" onclick="viewForm('Item')">
+                        +item
+                        <svg id="openSvgItem" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z"/>
+                        </svg>
+                        <svg id="closeSvgItem" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-up hidden" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </a>
+                </span>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+
+    function viewForm(typeForm){
+        elem = document.getElementById('create' + typeForm + 'Form')
+        elem.hidden = !elem.hidden
+        svgOpen = document.getElementById('openSvg' + typeForm)
+        svgClose = document.getElementById('closeSvg' + typeForm)
+        if (elem.hidden){
+            svgOpen.classList.remove('hidden');
+            svgClose.classList.add('hidden');
+        }
+        else {
+            svgOpen.classList.add('hidden');
+            svgClose.classList.remove('hidden');
+        }
+
+    }
+
+
+    function changeTodoStatus(elem, task_id){
+        fetch('/check_task', {
+          method: 'POST',
+          body: JSON.stringify({
+              task_id: task_id,
+              status: elem.checked,
+          })
+        })
+        .then(result => {
+        });
+    }
+
+    function changePublicEvent(elem, event_id) {
+        isPublic = JSON.parse(elem.dataset.public);
+        eyeSvg = document.getElementById('eye')
+        eyeSplashSvg = document.getElementById('eye-splash')
+
+        fetch('/change_event_public', {
+          method: 'POST',
+          body: JSON.stringify({
+              event_id: event_id,
+              is_public: isPublic,
+          })
+        })
+        .then(result => {
+            if (isPublic) {
+               eyeSvg.hidden = false;
+               eyeSplashSvg.hidden = true;
+            }
+            else if (!isPublic) {
+               eyeSvg.hidden = true;
+               eyeSplashSvg.hidden = false;
+            }
+        });
+    }
+
+
+    function uninviteUser(user_id, event_id, username){
+        requestUrl ='/-user/' + event_id + '/'
+        fetch(requestUrl, {
+              method: 'POST',
+              body: JSON.stringify({
+                  user_id: user_id,
+              })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result['message'] === 'OK'){
+                    userDiv = document.getElementById('inviteUser' + user_id)
+                    userDiv.remove();
+
+                    var selectElement = document.getElementById("usersSelect");
+                    var newOption = document.createElement("option");
+                    newOption.value = user_id;
+                    newOption.text = username + ' | ' + user_id;
+                    selectElement.add(newOption);
+
+                }
+            });
+    }
+
+
+</script>
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}

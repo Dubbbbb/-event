@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<style>
+  .center-content {
+    width: 65%;
+    margin: auto;
+  }
+
+  .not-checked-notif {
+    border: 3px solid rgb(0 30 233 / 33%);
+  }
+</style>
+
+
+<h3 class="mt-4 text-center">Notification</h3>
+
+<div>
+  {% for notif in notifications %}
+    {% if notif.type == 'invite' %}
+      {% if not notif.checked %}
+
+        <div class="center-content mb-2 alert alert-success alert-dismissible fade show" role="alert">
+          {{ notif.message|safe }} | {{notif.created_at}}
+          <button type="button" class="close" onclick="checkNotification({{ notif.pk }},this)" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endif %}
+    {% elif notif.type == 'uninvite' %}
+      {% if not notif.checked %}
+        <div class="center-content mb-2 alert alert-danger alert-dismissible fade show" role="alert">
+          {{ notif.message|safe }} | {{notif.created_at}}
+          <button type="button" class="close" onclick="checkNotification({{ notif.pk }},this)" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+
+<script>
+
+  function checkNotification(notification_id, elem) {
+
+    fetch('/check_notification', {
+      method: 'POST',
+      body: JSON.stringify({
+          notification_id: notification_id,
+      })
+    })
+    .then(response => response.json())
+    .then(result => {
+        var parentElement = elem.parentNode;
+        parentElement.parentNode.removeChild(parentElement);
+        document.getElementById('notificationCount').textContent = result['notification_count']
+    });
+  }
+
+</script>
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}
